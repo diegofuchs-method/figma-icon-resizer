@@ -48,21 +48,12 @@ figma.ui.onmessage = async (msg: any) => {
         // Batch mode: use frame names as icon names
         const selectedNodes = figma.currentPage.selection;
 
-        // Validate at least 2 frames selected
-        if (selectedNodes.length < 2) {
-          figma.ui.postMessage({
-            type: 'error',
-            message: 'Batch mode requires 2 or more frames selected'
-          });
-          return;
-        }
-
-        // Process each frame
+        // Process frames
         const results = await processBatch(selectedNodes);
 
-        // Send summary message
+        // Send message (error or success)
         figma.ui.postMessage({
-          type: 'success',
+          type: results.isError ? 'error' : 'success',
           message: results.message
         });
       }
@@ -82,8 +73,34 @@ figma.ui.onmessage = async (msg: any) => {
 /**
  * Batch process multiple frames
  */
-async function processBatch(selectedNodes: readonly BaseNode[]): Promise<{ message: string }> {
+async function processBatch(selectedNodes: readonly BaseNode[]): Promise<{ message: string; isError?: boolean }> {
   const validName = /^[a-zA-Z0-9_ -]+$/;
+
+  // FIRST PASS: Validate all frame names before processing anything
+  const invalidFrames: string[] = [];
+
+  for (const node of selectedNodes) {
+    const nodeName = (node as any).name || 'Unnamed';
+
+    // Check for invalid characters in frame name
+    if (!validName.test(nodeName)) {
+      invalidFrames.push(nodeName);
+    }
+  }
+
+  // If there are any naming issues, return error without processing anything
+  if (invalidFrames.length > 0) {
+    let message = `${invalidFrames.length} frame${invalidFrames.length !== 1 ? 's' : ''} ${invalidFrames.length !== 1 ? 'have' : 'has'} invalid characters in name:\n`;
+    for (let i = 0; i < invalidFrames.length; i++) {
+      message += invalidFrames[i];
+      if (i < invalidFrames.length - 1) {
+        message += '\n';
+      }
+    }
+    return { message, isError: true };
+  }
+
+  // SECOND PASS: All names are valid, process all frames
   const successes: string[] = [];
   const failures: { name: string; reason: string }[] = [];
 
@@ -97,15 +114,6 @@ async function processBatch(selectedNodes: readonly BaseNode[]): Promise<{ messa
     const nodeName = (node as any).name || 'Unnamed';
 
     try {
-      // Validate the frame name
-      if (!validName.test(nodeName)) {
-        failures.push({
-          name: nodeName,
-          reason: 'invalid characters in name'
-        });
-        continue;
-      }
-
       // Check if node is valid
       if (!('clone' in node)) {
         failures.push({

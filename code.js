@@ -38,16 +38,9 @@
           });
         } else if (mode === "batch") {
           const selectedNodes = figma.currentPage.selection;
-          if (selectedNodes.length < 2) {
-            figma.ui.postMessage({
-              type: "error",
-              message: "Batch mode requires 2 or more frames selected"
-            });
-            return;
-          }
           const results = await processBatch(selectedNodes);
           figma.ui.postMessage({
-            type: "success",
+            type: results.isError ? "error" : "success",
             message: results.message
           });
         }
@@ -64,6 +57,24 @@
   };
   async function processBatch(selectedNodes) {
     const validName = /^[a-zA-Z0-9_ -]+$/;
+    const invalidFrames = [];
+    for (const node of selectedNodes) {
+      const nodeName = node.name || "Unnamed";
+      if (!validName.test(nodeName)) {
+        invalidFrames.push(nodeName);
+      }
+    }
+    if (invalidFrames.length > 0) {
+      let message2 = `${invalidFrames.length} frame${invalidFrames.length !== 1 ? "s" : ""} ${invalidFrames.length !== 1 ? "have" : "has"} invalid characters in name:
+`;
+      for (let i = 0; i < invalidFrames.length; i++) {
+        message2 += invalidFrames[i];
+        if (i < invalidFrames.length - 1) {
+          message2 += "\n";
+        }
+      }
+      return { message: message2, isError: true };
+    }
     const successes = [];
     const failures = [];
     let currentYPos = 0;
@@ -73,13 +84,6 @@
     for (const node of selectedNodes) {
       const nodeName = node.name || "Unnamed";
       try {
-        if (!validName.test(nodeName)) {
-          failures.push({
-            name: nodeName,
-            reason: "invalid characters in name"
-          });
-          continue;
-        }
         if (!("clone" in node)) {
           failures.push({
             name: nodeName,

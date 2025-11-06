@@ -77,6 +77,7 @@
       margin-bottom: 16px;
       position: relative;
       margin-top: auto;
+      min-height: 110px;
     }
 
     label {
@@ -345,6 +346,8 @@
       batchModeInfo.style.display = 'none';
       createBtn.textContent = 'Create component set';
       step2Text.textContent = 'Enter a name for your component set';
+      messageDiv.style.display = 'none';
+      createBtn.classList.remove('has-message');
     });
 
     batchModeBtn.addEventListener('click', () => {
@@ -357,6 +360,8 @@
       batchModeInfo.style.display = 'flex';
       createBtn.textContent = 'Create component sets';
       step2Text.textContent = 'Name each selected frame as desired';
+      messageDiv.style.display = 'none';
+      createBtn.classList.remove('has-message');
     });
 
     // Handle search input clear button (clears message when input is cleared)

@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif;
+      font-size: 12px;
+      margin: 0;
+      padding: 16px;
+      background: #ffffff;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .header .svg {
+      width: 24px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+      color: #0F1B31;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+      position: relative;
+      margin-top: 40px;
+    }
+
+    label {
+      position: absolute;
+      top: -6px;
+      left: 6px;
+      background: #ffffff;
+      padding: 0 4px;
+      font-weight: 600;
+      font-size: 12px;
+      color: #0F1B31;
+      z-index: 10;
+    }
+
+    input[type='text'],
+    input[type='search'] {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #BACAD0;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif;
+      color: #2A394A;
+    }
+
+    input[type='text']:focus,
+    input[type='search']:focus {
+      outline: none;
+      border-color: #0D71C8;
+    }
+
+    /* Style the search input clear button */
+    input[type='search']::-webkit-search-cancel-button {
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      padding: 2px;
+      cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23545F67' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'/%3E%3Cline x1='6' y1='6' x2='18' y2='18'/%3E%3C/svg%3E");
+      background-color: transparent;
+      background-size: 14px 14px;
+      background-repeat: no-repeat;
+      background-position: center;
+      border-radius: 50%;
+      transition: background-color 0.2s ease;
+    }
+
+    input[type='search']::-webkit-search-cancel-button:hover {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232A394A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'/%3E%3Cline x1='6' y1='6' x2='18' y2='18'/%3E%3C/svg%3E");
+      background-color: #EEF5F7;
+      background-size: 14px 14px;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px 16px;
+      background: #0D71C8;
+      color: #ffffff;
+      border: none;
+      border-radius: 100px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 32px;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: #064499;
+    }
+
+    button:active {
+      background: #043d7a;
+    }
+
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .message {
+      padding: 12px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-size: 12px;
+    }
+
+    .message.success {
+      background: #e6f7ed;
+      color: #0a6c2c;
+      border: 1px solid #c6f5d9;
+    }
+
+    .message.error {
+      background: #fde6e6;
+      color: #ae2a19;
+      border: 1px solid #f8d7da;
+    }
+
+    .info-text {
+      font-size: 12px;
+      color: #2A394A;
+      margin-top: 8px;
+      margin-left: 8px;
+    }
+
+    .steps-container {
+      background: #E5F7FF;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+
+    .steps {
+      margin-bottom: 0;
+    }
+
+    .step {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      align-items: flex-start;
+    }
+
+    .step:last-child {
+      margin-bottom: 0;
+    }
+
+    .step-number {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #0D71C8;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .step-text {
+      font-size: 12px;
+      line-height: 1.5;
+      color: #2A394A;
+      padding-top: 3px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <svg class="svg" viewBox="0 0 1962 1962" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <g clip-path="url(#clip0)">
+        <rect width="1961.71" height="1961.71" rx="240" fill="#022266"/>
+        <path d="M1454.26 896.365V1136.08C1454.26 1153.01 1463.49 1164.99 1480.53 1164.27H1525.26V1291.18H1382.56C1324.35 1291.18 1298.08 1266.5 1298.08 1208.69V924.553C1298.08 854.733 1285.29 801.864 1213.59 801.864C1137.61 801.864 1083.65 866.024 1066.61 942.884C1059.49 966.875 1056.65 992.247 1056.65 1021.15V1291.18H900.441V924.553C900.441 858.267 891.934 801.864 818.095 801.864C739.975 801.864 688.877 866.024 669.695 944.292C663.301 968.283 659.047 993.655 659.047 1021.15V1291.9H509.952V833.613C509.952 815.281 497.886 805.398 480.844 805.398H431.859V678.485H574.561C629.217 678.485 659.047 701.759 659.047 745.461V763.793C659.047 777.183 654.794 791.29 654.794 791.29H656.934C686.042 727.82 759.881 664.378 857.155 664.378C950.872 664.378 1011.23 706.673 1038.19 791.29H1040.33C1073 720.808 1153.23 663.688 1251.2 663.688C1380.42 663.688 1454.26 734.915 1454.26 896.365Z" fill="white"/>
+      </g>
+      <defs>
+        <clipPath id="clip0">
+          <rect width="1961.71" height="1961.71" rx="240" fill="white"/>
+        </clipPath>
+      </defs>
+    </svg>
+    <h1>Method Icon Resizer</h1>
+  </div>
+
+  <div class="steps-container">
+    <div class="steps">
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-text">Select a frame containing your icon</div>
+      </div>
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-text">Enter a name for your component set</div>
+      </div>
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-text">Click "Create Component Set" to generate 6 size variants with optimized stroke weights</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="message"></div>
+
+  <div class="form-group">
+    <label for="iconName">Icon name</label>
+    <input
+      id="iconName"
+      type="search"
+      placeholder="e.g., chevron-right"
+    />
+    <div class="info-text">Name for your component set</div>
+  </div>
+
+  <button id="createBtn">Create component set</button>
+
+  <script>
+    const iconNameInput = document.getElementById('iconName');
+    const createBtn = document.getElementById('createBtn');
+    const messageDiv = document.getElementById('message');
+    const formGroup = document.querySelector('.form-group');
+
+    // Handle search input clear button (clears message when input is cleared)
+    iconNameInput.addEventListener('search', () => {
+      if (iconNameInput.value === '') {
+        messageDiv.style.display = 'none';
+        formGroup.style.marginTop = '40px';
+        createBtn.style.marginTop = '32px';
+      }
+    });
+
+    // Allow Enter key to trigger button click
+    iconNameInput.addEventListener('keypress', (event) => {
+      if (event.key === 'Enter') {
+        createBtn.click();
+      }
+    });
+
+    createBtn.addEventListener('click', () => {
+      const iconName = iconNameInput.value.trim();
+
+      // Clear previous message
+      messageDiv.style.display = 'none';
+
+      if (!iconName) {
+        showMessage('Please enter an icon name', 'error');
+        return;
+      }
+
+      // Validate icon name - only allow letters, numbers, hyphens, underscores, and spaces
+      const validName = /^[a-zA-Z0-9_ -]+$/;
+      if (!validName.test(iconName)) {
+        showMessage('Only letters, numbers, spaces, hyphens, and underscores supported', 'error');
+        return;
+      }
+
+      createBtn.disabled = true;
+      createBtn.textContent = 'Creating...';
+
+      parent.postMessage(
+        {
+          pluginMessage: {
+            type: 'create-components',
+            iconName: iconName
+          }
+        },
+        '*'
+      );
+    });
+
+    window.onmessage = (event) => {
+      const msg = event.data.pluginMessage;
+
+      if (msg && msg.type === 'success') {
+        createBtn.disabled = false;
+        createBtn.textContent = 'Create component set';
+        showMessage(msg.message, 'success');
+        iconNameInput.value = '';
+      }
+
+      if (msg && msg.type === 'error') {
+        createBtn.disabled = false;
+        createBtn.textContent = 'Create component set';
+        showMessage(msg.message, 'error');
+      }
+    };
+
+    function showMessage(text, type) {
+      messageDiv.textContent = text;
+      messageDiv.className = `message ${type}`;
+      messageDiv.style.display = 'block';
+
+      // Move input down when message appears
+      formGroup.style.marginTop = '8px';
+      // Reduce button top margin significantly to keep it in place
+      createBtn.style.marginTop = '0px';
+
+      if (type === 'success') {
+        setTimeout(() => {
+          messageDiv.style.display = 'none';
+          // Reset input and button position after success message disappears
+          formGroup.style.marginTop = '40px';
+          createBtn.style.marginTop = '32px';
+        }, 3000);
+      }
+    }
+  </script>
+</body>
+</html>

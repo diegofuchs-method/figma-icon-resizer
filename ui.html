@@ -11,11 +11,16 @@
       font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif;
       font-size: 12px;
       margin: 0;
-      padding: 16px;
       background: #ffffff;
       display: flex;
       flex-direction: column;
       height: 100%;
+    }
+
+    .scrollable-content {
+      padding: 16px;
+      overflow-y: auto;
+      flex: 1;
     }
 
     .header {
@@ -143,8 +148,10 @@
     }
 
     button {
-      width: 100%;
+      flex-shrink: 0;
+      width: calc(100% - 32px);
       padding: 10px 16px;
+      margin: 16px 16px;
       background: #0D71C8;
       color: #ffffff;
       border: none;
@@ -152,12 +159,7 @@
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
-      margin-top: auto;
       transition: background 0.2s;
-    }
-
-    button.has-message {
-      margin-top: 0 !important;
     }
 
     button:hover {
@@ -262,6 +264,7 @@
   </style>
 </head>
 <body>
+  <div class="scrollable-content">
   <div class="header">
     <svg class="svg" viewBox="0 0 1962 1962" fill="none" xmlns="http://www.w3.org/2000/svg">
       <g clip-path="url(#clip0)">
@@ -318,6 +321,7 @@
       <span>Frame names will be used as icon names</span>
     </div>
   </div>
+  </div>
 
   <button id="createBtn">Create component set</button>
 
@@ -363,7 +367,6 @@
     iconNameInput.addEventListener('search', () => {
       if (iconNameInput.value === '') {
         messageDiv.style.display = 'none';
-        createBtn.classList.remove('has-message');
       }
     });
 
@@ -443,12 +446,10 @@
       messageDiv.textContent = text;
       messageDiv.className = `message ${type}`;
       messageDiv.style.display = 'block';
-      createBtn.classList.add('has-message');
 
       if (type === 'success') {
         setTimeout(() => {
           messageDiv.style.display = 'none';
-          createBtn.classList.remove('has-message');
         }, 3000);
       }
     }

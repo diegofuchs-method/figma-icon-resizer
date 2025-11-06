@@ -58,9 +58,6 @@
         });
       }
     }
-    if (msg.type === "resize") {
-      figma.ui.resize(400, msg.height);
-    }
     if (msg.type === "close") {
       figma.closePlugin();
     }
@@ -288,5 +285,5 @@
       }
     }
   }
-  figma.showUI(__html__, { width: 400, height: 450 });
+  figma.showUI(__html__, { width: 400, height: 500 });
 })();

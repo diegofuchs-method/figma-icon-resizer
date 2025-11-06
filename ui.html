@@ -338,7 +338,6 @@
       batchModeInfo.style.display = 'none';
       createBtn.textContent = 'Create component set';
       step2Text.textContent = 'Enter a name for your component set';
-      setTimeout(() => resizeModal(), 0);
     });
 
     batchModeBtn.addEventListener('click', () => {
@@ -351,7 +350,6 @@
       batchModeInfo.style.display = 'flex';
       createBtn.textContent = 'Create component sets';
       step2Text.textContent = 'Name each selected frame as desired';
-      setTimeout(() => resizeModal(), 0);
     });
 
     // Handle search input clear button (clears message when input is cleared)
@@ -451,36 +449,8 @@
           // Reset input and button position after success message disappears
           formGroup.style.marginTop = '40px';
           createBtn.style.marginTop = '32px';
-          resizeModal();
         }, 3000);
       }
-
-      // Resize modal after message appears
-      resizeModal();
-    }
-
-    // Function to dynamically resize modal to fit content
-    function resizeModal() {
-      const height = document.body.scrollHeight;
-      parent.postMessage(
-        {
-          pluginMessage: {
-            type: 'resize',
-            height: height
-          }
-        },
-        '*'
-      );
-    }
-
-    // Initial resize when page loads
-    window.addEventListener('load', () => {
-      resizeModal();
-    });
-
-    // Resize when mode changes
-    function updateModeUI(isActive) {
-      setTimeout(() => resizeModal(), 0);
     }
   </script>
 </body>

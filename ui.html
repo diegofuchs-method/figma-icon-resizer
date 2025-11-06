@@ -80,6 +80,10 @@
       min-height: 110px;
     }
 
+    .form-group.has-message-above {
+      margin-top: 0;
+    }
+
     label {
       position: absolute;
       top: -6px;
@@ -345,6 +349,7 @@
       step2Text.textContent = 'Enter a name for your component set';
       messageDiv.style.display = 'none';
       createBtn.classList.remove('has-message');
+      formGroup.classList.remove('has-message-above');
     });
 
     batchModeBtn.addEventListener('click', () => {
@@ -359,6 +364,7 @@
       step2Text.textContent = 'Name each selected frame as desired';
       messageDiv.style.display = 'none';
       createBtn.classList.remove('has-message');
+      formGroup.classList.remove('has-message-above');
     });
 
     // Handle search input clear button (clears message when input is cleared)
@@ -366,6 +372,7 @@
       if (iconNameInput.value === '') {
         messageDiv.style.display = 'none';
         createBtn.classList.remove('has-message');
+        formGroup.classList.remove('has-message-above');
       }
     });
 
@@ -446,11 +453,13 @@
       messageDiv.className = `message ${type}`;
       messageDiv.style.display = 'block';
       createBtn.classList.add('has-message');
+      formGroup.classList.add('has-message-above');
 
       if (type === 'success') {
         setTimeout(() => {
           messageDiv.style.display = 'none';
           createBtn.classList.remove('has-message');
+          formGroup.classList.remove('has-message-above');
         }, 3000);
       }
     }

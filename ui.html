@@ -156,6 +156,10 @@
       transition: background 0.2s;
     }
 
+    button.has-message {
+      margin-top: 16px;
+    }
+
     button:hover {
       background: #064499;
     }
@@ -359,6 +363,7 @@
     iconNameInput.addEventListener('search', () => {
       if (iconNameInput.value === '') {
         messageDiv.style.display = 'none';
+        createBtn.classList.remove('has-message');
       }
     });
 
@@ -438,10 +443,12 @@
       messageDiv.textContent = text;
       messageDiv.className = `message ${type}`;
       messageDiv.style.display = 'block';
+      createBtn.classList.add('has-message');
 
       if (type === 'success') {
         setTimeout(() => {
           messageDiv.style.display = 'none';
+          createBtn.classList.remove('has-message');
         }, 3000);
       }
     }

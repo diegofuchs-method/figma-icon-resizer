@@ -105,6 +105,12 @@
       border-color: #0D71C8;
     }
 
+    input[type='search']:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background-color: #f5f5f5;
+    }
+
     /* Style the search input clear button */
     input[type='search']::-webkit-search-cancel-button {
       appearance: none;
@@ -273,7 +279,8 @@
       type="search"
       placeholder="e.g., chevron-right"
     />
-    <div class="info-text">Name for your component set</div>
+    <div class="info-text" id="singleModeInfo">Name for your component set</div>
+    <div class="info-text" id="batchModeInfo" style="display: none; color: #545F67;">Frame names will be used as icon names</div>
   </div>
 
   <button id="createBtn">Create component set</button>
@@ -286,6 +293,8 @@
     const singleModeBtn = document.getElementById('singleModeBtn');
     const batchModeBtn = document.getElementById('batchModeBtn');
     const step2Text = document.querySelector('.steps .step:nth-child(2) .step-text');
+    const singleModeInfo = document.getElementById('singleModeInfo');
+    const batchModeInfo = document.getElementById('batchModeInfo');
 
     let currentMode = 'single';
 
@@ -294,7 +303,9 @@
       currentMode = 'single';
       singleModeBtn.classList.add('active');
       batchModeBtn.classList.remove('active');
-      formGroup.style.display = 'block';
+      iconNameInput.disabled = false;
+      singleModeInfo.style.display = 'block';
+      batchModeInfo.style.display = 'none';
       createBtn.textContent = 'Create component set';
       step2Text.textContent = 'Enter a name for your component set';
     });
@@ -303,7 +314,9 @@
       currentMode = 'batch';
       batchModeBtn.classList.add('active');
       singleModeBtn.classList.remove('active');
-      formGroup.style.display = 'none';
+      iconNameInput.disabled = true;
+      singleModeInfo.style.display = 'none';
+      batchModeInfo.style.display = 'block';
       createBtn.textContent = 'Create component sets';
       step2Text.textContent = 'Make sure each selected frame is named what you want the icon to be';
     });

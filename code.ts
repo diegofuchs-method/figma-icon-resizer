@@ -90,6 +90,8 @@ async function processBatch(selectedNodes: readonly BaseNode[]): Promise<{ messa
   let currentYPos = 0;
   const firstNode = selectedNodes[0] as any;
   let yStartPos = firstNode.y;
+  // Calculate X position based on first frame (all batch sets align to this)
+  const xPosition = firstNode.x + firstNode.width + 40;
 
   for (const node of selectedNodes) {
     const nodeName = (node as any).name || 'Unnamed';
@@ -114,8 +116,9 @@ async function processBatch(selectedNodes: readonly BaseNode[]): Promise<{ messa
       }
 
       // Create component set with calculated Y position for vertical stacking
+      // and fixed X position for left alignment
       const yPosition = yStartPos + currentYPos;
-      await createComponentSet(node, nodeName, yPosition, true);
+      await createComponentSet(node, nodeName, yPosition, xPosition, true);
 
       successes.push(nodeName);
 
@@ -152,7 +155,7 @@ async function processBatch(selectedNodes: readonly BaseNode[]): Promise<{ messa
   return { message };
 }
 
-async function createComponentSet(sourceNode: BaseNode, iconName: string, yPosition?: number, isBatch: boolean = false): Promise<void> {
+async function createComponentSet(sourceNode: BaseNode, iconName: string, yPosition?: number, xPosition?: number, isBatch: boolean = false): Promise<void> {
   // Step 1: Create a working frame (flatten, scale, ungroup)
   const workingFrame = sourceNode.clone();
 
@@ -205,8 +208,9 @@ async function createComponentSet(sourceNode: BaseNode, iconName: string, yPosit
   // Step 2: Create 6 size variants based on icon size
   const components: ComponentNode[] = [];
 
-  // For batch mode, position to the right of the first frame (not each frame)
-  const startX = isBatch ? (sourceNode as any).x + (sourceNode as any).width + 40 : (sourceNode as any).x + (sourceNode as any).width + 40;
+  // For batch mode, use the provided xPosition for left alignment
+  // For single mode, calculate position based on the selected frame
+  const startX = xPosition !== undefined ? xPosition : (sourceNode as any).x + (sourceNode as any).width + 40;
   let xPos = startX;
   const frameYPos = yPosition !== undefined ? yPosition : (sourceNode as any).y;
 

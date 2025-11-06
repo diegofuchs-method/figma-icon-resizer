@@ -69,6 +69,7 @@
     let currentYPos = 0;
     const firstNode = selectedNodes[0];
     let yStartPos = firstNode.y;
+    const xPosition = firstNode.x + firstNode.width + 40;
     for (const node of selectedNodes) {
       const nodeName = node.name || "Unnamed";
       try {
@@ -87,7 +88,7 @@
           continue;
         }
         const yPosition = yStartPos + currentYPos;
-        await createComponentSet(node, nodeName, yPosition, true);
+        await createComponentSet(node, nodeName, yPosition, xPosition, true);
         successes.push(nodeName);
         currentYPos += 80 + 80;
       } catch (error) {
@@ -114,7 +115,7 @@
     }
     return { message };
   }
-  async function createComponentSet(sourceNode, iconName, yPosition, isBatch = false) {
+  async function createComponentSet(sourceNode, iconName, yPosition, xPosition, isBatch = false) {
     const workingFrame = sourceNode.clone();
     if (!("children" in workingFrame)) {
       throw new Error("Selected node must be a frame");
@@ -146,7 +147,7 @@
     const originalHeight = flattenedVector.height;
     figma.ungroup(firstChild);
     const components = [];
-    const startX = isBatch ? sourceNode.x + sourceNode.width + 40 : sourceNode.x + sourceNode.width + 40;
+    const startX = xPosition !== void 0 ? xPosition : sourceNode.x + sourceNode.width + 40;
     let xPos = startX;
     const frameYPos = yPosition !== void 0 ? yPosition : sourceNode.y;
     for (const [size, strokeWeight] of Object.entries(SIZES_AND_WEIGHTS)) {

@@ -92,7 +92,7 @@ async function processBatch(selectedNodes: readonly BaseNode[]): Promise<{ messa
   if (invalidFrames.length > 0) {
     let message = `${invalidFrames.length} frame${invalidFrames.length !== 1 ? 's' : ''} ${invalidFrames.length !== 1 ? 'have' : 'has'} invalid characters in name:\n`;
     for (let i = 0; i < invalidFrames.length; i++) {
-      message += invalidFrames[i];
+      message += '• ' + invalidFrames[i];
       if (i < invalidFrames.length - 1) {
         message += '\n';
       }

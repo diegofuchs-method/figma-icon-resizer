@@ -68,7 +68,7 @@
       let message2 = `${invalidFrames.length} frame${invalidFrames.length !== 1 ? "s" : ""} ${invalidFrames.length !== 1 ? "have" : "has"} invalid characters in name:
 `;
       for (let i = 0; i < invalidFrames.length; i++) {
-        message2 += invalidFrames[i];
+        message2 += "\u2022 " + invalidFrames[i];
         if (i < invalidFrames.length - 1) {
           message2 += "\n";
         }

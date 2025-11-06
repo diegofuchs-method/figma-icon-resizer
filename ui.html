@@ -78,7 +78,6 @@
       position: relative;
       margin-top: 60px;
       min-height: 110px;
-      transition: min-height 0.2s;
     }
 
     .form-group.has-message-above {
@@ -337,7 +336,6 @@
     const batchModeInfo = document.getElementById('batchModeInfo');
 
     let currentMode = 'single';
-    const originalFormGroupMinHeight = 110; // Original min-height in px
 
     // Handle mode toggle
     singleModeBtn.addEventListener('click', () => {
@@ -353,7 +351,6 @@
       messageDiv.style.display = 'none';
       createBtn.classList.remove('has-message');
       formGroup.classList.remove('has-message-above');
-      restoreFormGroupHeight();
     });
 
     batchModeBtn.addEventListener('click', () => {
@@ -369,7 +366,6 @@
       messageDiv.style.display = 'none';
       createBtn.classList.remove('has-message');
       formGroup.classList.remove('has-message-above');
-      restoreFormGroupHeight();
     });
 
     // Handle search input clear button (clears message when input is cleared)
@@ -378,7 +374,6 @@
         messageDiv.style.display = 'none';
         createBtn.classList.remove('has-message');
         formGroup.classList.remove('has-message-above');
-        restoreFormGroupHeight();
       }
     });
 
@@ -461,26 +456,13 @@
       createBtn.classList.add('has-message');
       formGroup.classList.add('has-message-above');
 
-      // Measure message height and reduce form-group min-height
-      setTimeout(() => {
-        const messageHeight = messageDiv.offsetHeight;
-        const newMinHeight = Math.max(0, originalFormGroupMinHeight - messageHeight);
-        formGroup.style.minHeight = newMinHeight + 'px';
-      }, 0);
-
       if (type === 'success') {
         setTimeout(() => {
           messageDiv.style.display = 'none';
           createBtn.classList.remove('has-message');
           formGroup.classList.remove('has-message-above');
-          formGroup.style.minHeight = originalFormGroupMinHeight + 'px';
         }, 3000);
       }
-    }
-
-    // Function to restore form-group height when message is manually cleared
-    function restoreFormGroupHeight() {
-      formGroup.style.minHeight = originalFormGroupMinHeight + 'px';
     }
   </script>
 </body>

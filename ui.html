@@ -13,6 +13,9 @@
       margin: 0;
       padding: 16px;
       background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
     }
 
     .header {
@@ -149,7 +152,7 @@
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
-      margin-top: 32px;
+      margin-top: auto;
       transition: background 0.2s;
     }
 
@@ -356,8 +359,6 @@
     iconNameInput.addEventListener('search', () => {
       if (iconNameInput.value === '') {
         messageDiv.style.display = 'none';
-        formGroup.style.marginTop = '40px';
-        createBtn.style.marginTop = '32px';
       }
     });
 
@@ -438,17 +439,9 @@
       messageDiv.className = `message ${type}`;
       messageDiv.style.display = 'block';
 
-      // Move input down when message appears
-      formGroup.style.marginTop = '8px';
-      // Reduce button top margin significantly to keep it in place
-      createBtn.style.marginTop = '0px';
-
       if (type === 'success') {
         setTimeout(() => {
           messageDiv.style.display = 'none';
-          // Reset input and button position after success message disappears
-          formGroup.style.marginTop = '40px';
-          createBtn.style.marginTop = '32px';
         }, 3000);
       }
     }

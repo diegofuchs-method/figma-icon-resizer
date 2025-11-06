@@ -74,6 +74,10 @@ figma.ui.onmessage = async (msg: any) => {
     }
   }
 
+  if (msg.type === 'resize') {
+    figma.ui.resize(400, msg.height);
+  }
+
   if (msg.type === 'close') {
     figma.closePlugin();
   }
@@ -418,4 +422,4 @@ function applyStrokeWeightRecursive(node: BaseNode, weight: number): void {
 }
 
 // Show the UI
-figma.showUI(__html__, { width: 400, height: 600 });
+figma.showUI(__html__, { width: 400, height: 450 });

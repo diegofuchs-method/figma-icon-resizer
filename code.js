@@ -13,27 +13,37 @@
   figma.ui.onmessage = async (msg) => {
     if (msg.type === "create-components") {
       try {
-        const iconName = msg.iconName;
+        const mode = msg.mode || "single";
         if (figma.currentPage.selection.length === 0) {
           figma.ui.postMessage({
             type: "error",
-            message: "Please select a vector object first"
+            message: "Please select a frame first"
           });
           return;
         }
-        const selectedNode = figma.currentPage.selection[0];
-        if (!("clone" in selectedNode)) {
+        if (mode === "single") {
+          const iconName = msg.iconName;
+          const selectedNode = figma.currentPage.selection[0];
+          if (!("clone" in selectedNode)) {
+            figma.ui.postMessage({
+              type: "error",
+              message: "Please select a valid vector or group object"
+            });
+            return;
+          }
+          await createComponentSet(selectedNode, iconName);
           figma.ui.postMessage({
-            type: "error",
-            message: "Please select a valid vector or group object"
+            type: "success",
+            message: "Component set created successfully!"
           });
-          return;
+        } else if (mode === "batch") {
+          const selectedNodes = figma.currentPage.selection;
+          const results = await processBatch(selectedNodes);
+          figma.ui.postMessage({
+            type: results.isError ? "error" : "success",
+            message: results.message
+          });
         }
-        await createComponentSet(selectedNode, iconName);
-        figma.ui.postMessage({
-          type: "success",
-          message: "Component set created successfully!"
-        });
       } catch (error) {
         figma.ui.postMessage({
           type: "error",
@@ -45,7 +55,71 @@
       figma.closePlugin();
     }
   };
-  async function createComponentSet(sourceNode, iconName) {
+  async function processBatch(selectedNodes) {
+    const validName = /^[a-zA-Z0-9_ -]+$/;
+    const invalidFrames = [];
+    for (const node of selectedNodes) {
+      const nodeName = node.name || "Unnamed";
+      if (!validName.test(nodeName)) {
+        invalidFrames.push(nodeName);
+      }
+    }
+    if (invalidFrames.length > 0) {
+      let message2 = `${invalidFrames.length} frame${invalidFrames.length !== 1 ? "s" : ""} ${invalidFrames.length !== 1 ? "have" : "has"} invalid characters in name:
+`;
+      for (let i = 0; i < invalidFrames.length; i++) {
+        message2 += "\u2022 " + invalidFrames[i];
+        if (i < invalidFrames.length - 1) {
+          message2 += "\n";
+        }
+      }
+      return { message: message2, isError: true };
+    }
+    const successes = [];
+    const failures = [];
+    let currentYPos = 0;
+    const firstNode = selectedNodes[0];
+    let yStartPos = firstNode.y;
+    const xPosition = firstNode.x + firstNode.width + 40;
+    for (const node of selectedNodes) {
+      const nodeName = node.name || "Unnamed";
+      try {
+        if (!("clone" in node)) {
+          failures.push({
+            name: nodeName,
+            reason: "not a valid frame"
+          });
+          continue;
+        }
+        const yPosition = yStartPos + currentYPos;
+        await createComponentSet(node, nodeName, yPosition, xPosition, true);
+        successes.push(nodeName);
+        currentYPos += 80 + 80;
+      } catch (error) {
+        const reason = error instanceof Error ? error.message : "unknown error";
+        failures.push({
+          name: nodeName,
+          reason
+        });
+      }
+    }
+    let message = "";
+    if (successes.length > 0) {
+      message = `Created ${successes.length} component set${successes.length !== 1 ? "s" : ""}`;
+    }
+    if (failures.length > 0) {
+      if (message) {
+        message += `. ${failures.length} failed`;
+      } else {
+        message = `Failed to create component sets`;
+      }
+      if (failures.length > 0) {
+        message += `: ${failures[0].name} (${failures[0].reason})`;
+      }
+    }
+    return { message };
+  }
+  async function createComponentSet(sourceNode, iconName, yPosition, xPosition, isBatch = false) {
     const workingFrame = sourceNode.clone();
     if (!("children" in workingFrame)) {
       throw new Error("Selected node must be a frame");
@@ -77,8 +151,9 @@
     const originalHeight = flattenedVector.height;
     figma.ungroup(firstChild);
     const components = [];
-    const startX = sourceNode.x + sourceNode.width + 40;
+    const startX = xPosition !== void 0 ? xPosition : sourceNode.x + sourceNode.width + 40;
     let xPos = startX;
+    const frameYPos = yPosition !== void 0 ? yPosition : sourceNode.y;
     for (const [size, strokeWeight] of Object.entries(SIZES_AND_WEIGHTS)) {
       const sizeNum = parseInt(size);
       const iconClone = flattenedVector.clone();
@@ -108,7 +183,7 @@
       iconClone.y = offsetY;
       frame.name = `Size=${sizeNum}`;
       frame.x = xPos;
-      frame.y = sourceNode.y;
+      frame.y = frameYPos;
       xPos += frame.width + SPACING;
       const component = figma.createComponentFromNode(frame);
       components.push(component);
@@ -214,5 +289,5 @@
       }
     }
   }
-  figma.showUI(__html__, { width: 400, height: 400 });
+  figma.showUI(__html__, { width: 400, height: 480 });
 })();

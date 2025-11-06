@@ -13,6 +13,9 @@
       margin: 0;
       padding: 16px;
       background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
     }
 
     .header {
@@ -35,10 +38,50 @@
       color: #0F1B31;
     }
 
-    .form-group {
+    .mode-selector {
+      display: flex;
+      gap: 8px;
+      margin-top: 0;
       margin-bottom: 16px;
+      background: #f5f5f5;
+      padding: 4px 4px 4px 4px;
+      border-radius: 4px;
+      width: 100%;
+    }
+
+    .mode-btn {
+      padding: 6px 12px;
+      margin: 0;
+      border: none;
+      background: transparent;
+      color: #2A394A;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.2s;
+      font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif;
+    }
+
+    .mode-btn.active {
+      background: #ffffff;
+      color: #0D71C8;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .mode-btn:hover {
+      background: rgba(255, 255, 255, 0.5);
+    }
+
+    .form-group {
+      margin-bottom: 0px;
       position: relative;
-      margin-top: 40px;
+      margin-top: 60px;
+      min-height: 80px;
+    }
+
+    .form-group.has-message-above {
+      margin-top: 0;
     }
 
     label {
@@ -68,6 +111,16 @@
     input[type='search']:focus {
       outline: none;
       border-color: #0D71C8;
+    }
+
+    input[type='search']:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background-color: #f5f5f5;
+    }
+
+    .form-group.batch-mode label {
+      opacity: 0.5;
     }
 
     /* Style the search input clear button */
@@ -104,7 +157,8 @@
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
-      margin-top: 32px;
+      margin-top: 2px;
+      margin-bottom: 0;
       transition: background 0.2s;
     }
 
@@ -126,6 +180,7 @@
       border-radius: 4px;
       margin-bottom: 20px;
       font-size: 12px;
+      white-space: pre-wrap;
     }
 
     .message.success {
@@ -145,6 +200,24 @@
       color: #2A394A;
       margin-top: 8px;
       margin-left: 8px;
+    }
+
+    #batchModeInfo {
+      background: #E5F7FF;
+      border: 1px solid #0D71C8;
+      color: #0D71C8;
+      padding: 8px 12px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: 0;
+    }
+
+    .info-icon {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
     }
 
     .steps-container {
@@ -207,6 +280,11 @@
     <h1>Method Icon Resizer</h1>
   </div>
 
+  <div class="mode-selector">
+    <button type="button" class="mode-btn active" id="singleModeBtn">Single</button>
+    <button type="button" class="mode-btn" id="batchModeBtn">Batch</button>
+  </div>
+
   <div class="steps-container">
     <div class="steps">
       <div class="step">
@@ -233,7 +311,15 @@
       type="search"
       placeholder="e.g., chevron-right"
     />
-    <div class="info-text">Name for your component set</div>
+    <div class="info-text" id="singleModeInfo">Name for your component set</div>
+    <div class="info-text" id="batchModeInfo" style="display: none;">
+      <svg class="info-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+        <path d="M12 16V12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="12" cy="9" r="0.5" fill="currentColor"/>
+      </svg>
+      <span>Frame names will be used as icon names</span>
+    </div>
   </div>
 
   <button id="createBtn">Create component set</button>
@@ -243,13 +329,51 @@
     const createBtn = document.getElementById('createBtn');
     const messageDiv = document.getElementById('message');
     const formGroup = document.querySelector('.form-group');
+    const singleModeBtn = document.getElementById('singleModeBtn');
+    const batchModeBtn = document.getElementById('batchModeBtn');
+    const step2Text = document.querySelector('.steps .step:nth-child(2) .step-text');
+    const singleModeInfo = document.getElementById('singleModeInfo');
+    const batchModeInfo = document.getElementById('batchModeInfo');
+
+    let currentMode = 'single';
+
+    // Handle mode toggle
+    singleModeBtn.addEventListener('click', () => {
+      currentMode = 'single';
+      singleModeBtn.classList.add('active');
+      batchModeBtn.classList.remove('active');
+      iconNameInput.disabled = false;
+      formGroup.classList.remove('batch-mode');
+      singleModeInfo.style.display = 'block';
+      batchModeInfo.style.display = 'none';
+      createBtn.textContent = 'Create component set';
+      step2Text.textContent = 'Enter a name for your component set';
+      messageDiv.style.display = 'none';
+      createBtn.classList.remove('has-message');
+      formGroup.classList.remove('has-message-above');
+    });
+
+    batchModeBtn.addEventListener('click', () => {
+      currentMode = 'batch';
+      batchModeBtn.classList.add('active');
+      singleModeBtn.classList.remove('active');
+      iconNameInput.disabled = true;
+      formGroup.classList.add('batch-mode');
+      singleModeInfo.style.display = 'none';
+      batchModeInfo.style.display = 'flex';
+      createBtn.textContent = 'Create component sets';
+      step2Text.textContent = 'Name each selected frame as desired';
+      messageDiv.style.display = 'none';
+      createBtn.classList.remove('has-message');
+      formGroup.classList.remove('has-message-above');
+    });
 
     // Handle search input clear button (clears message when input is cleared)
     iconNameInput.addEventListener('search', () => {
       if (iconNameInput.value === '') {
         messageDiv.style.display = 'none';
-        formGroup.style.marginTop = '40px';
-        createBtn.style.marginTop = '32px';
+        createBtn.classList.remove('has-message');
+        formGroup.classList.remove('has-message-above');
       }
     });
 
@@ -261,35 +385,51 @@
     });
 
     createBtn.addEventListener('click', () => {
-      const iconName = iconNameInput.value.trim();
-
       // Clear previous message
       messageDiv.style.display = 'none';
 
-      if (!iconName) {
-        showMessage('Please enter an icon name', 'error');
-        return;
+      if (currentMode === 'single') {
+        const iconName = iconNameInput.value.trim();
+
+        if (!iconName) {
+          showMessage('Please enter an icon name', 'error');
+          return;
+        }
+
+        // Validate icon name - only allow letters, numbers, hyphens, underscores, and spaces
+        const validName = /^[a-zA-Z0-9_ -]+$/;
+        if (!validName.test(iconName)) {
+          showMessage('Only letters, numbers, spaces, hyphens, and underscores supported', 'error');
+          return;
+        }
+
+        createBtn.disabled = true;
+        createBtn.textContent = 'Creating...';
+
+        parent.postMessage(
+          {
+            pluginMessage: {
+              type: 'create-components',
+              mode: 'single',
+              iconName: iconName
+            }
+          },
+          '*'
+        );
+      } else if (currentMode === 'batch') {
+        createBtn.disabled = true;
+        createBtn.textContent = 'Creating...';
+
+        parent.postMessage(
+          {
+            pluginMessage: {
+              type: 'create-components',
+              mode: 'batch'
+            }
+          },
+          '*'
+        );
       }
-
-      // Validate icon name - only allow letters, numbers, hyphens, underscores, and spaces
-      const validName = /^[a-zA-Z0-9_ -]+$/;
-      if (!validName.test(iconName)) {
-        showMessage('Only letters, numbers, spaces, hyphens, and underscores supported', 'error');
-        return;
-      }
-
-      createBtn.disabled = true;
-      createBtn.textContent = 'Creating...';
-
-      parent.postMessage(
-        {
-          pluginMessage: {
-            type: 'create-components',
-            iconName: iconName
-          }
-        },
-        '*'
-      );
     });
 
     window.onmessage = (event) => {
@@ -313,18 +453,14 @@
       messageDiv.textContent = text;
       messageDiv.className = `message ${type}`;
       messageDiv.style.display = 'block';
-
-      // Move input down when message appears
-      formGroup.style.marginTop = '8px';
-      // Reduce button top margin significantly to keep it in place
-      createBtn.style.marginTop = '0px';
+      createBtn.classList.add('has-message');
+      formGroup.classList.add('has-message-above');
 
       if (type === 'success') {
         setTimeout(() => {
           messageDiv.style.display = 'none';
-          // Reset input and button position after success message disappears
-          formGroup.style.marginTop = '40px';
-          createBtn.style.marginTop = '32px';
+          createBtn.classList.remove('has-message');
+          formGroup.classList.remove('has-message-above');
         }, 3000);
       }
     }

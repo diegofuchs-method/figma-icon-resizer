@@ -14,33 +14,49 @@ const SPACING = 40;
 figma.ui.onmessage = async (msg: any) => {
   if (msg.type === 'create-components') {
     try {
-      const iconName = msg.iconName;
+      const mode = msg.mode || 'single';
 
       // Check if something is selected
       if (figma.currentPage.selection.length === 0) {
         figma.ui.postMessage({
           type: 'error',
-          message: 'Please select a vector object first'
+          message: 'Please select a frame first'
         });
         return;
       }
 
-      const selectedNode = figma.currentPage.selection[0];
+      if (mode === 'single') {
+        // Single mode: use provided icon name
+        const iconName = msg.iconName;
+        const selectedNode = figma.currentPage.selection[0];
 
-      // Check if selection is a valid node type that can be cloned
-      if (!('clone' in selectedNode)) {
+        // Check if selection is a valid node type that can be cloned
+        if (!('clone' in selectedNode)) {
+          figma.ui.postMessage({
+            type: 'error',
+            message: 'Please select a valid vector or group object'
+          });
+          return;
+        }
+
+        await createComponentSet(selectedNode, iconName);
         figma.ui.postMessage({
-          type: 'error',
-          message: 'Please select a valid vector or group object'
+          type: 'success',
+          message: 'Component set created successfully!'
         });
-        return;
-      }
+      } else if (mode === 'batch') {
+        // Batch mode: use frame names as icon names
+        const selectedNodes = figma.currentPage.selection;
 
-      await createComponentSet(selectedNode, iconName);
-      figma.ui.postMessage({
-        type: 'success',
-        message: 'Component set created successfully!'
-      });
+        // Process frames
+        const results = await processBatch(selectedNodes);
+
+        // Send message (error or success)
+        figma.ui.postMessage({
+          type: results.isError ? 'error' : 'success',
+          message: results.message
+        });
+      }
     } catch (error) {
       figma.ui.postMessage({
         type: 'error',
@@ -54,7 +70,100 @@ figma.ui.onmessage = async (msg: any) => {
   }
 };
 
-async function createComponentSet(sourceNode: BaseNode, iconName: string): Promise<void> {
+/**
+ * Batch process multiple frames
+ */
+async function processBatch(selectedNodes: readonly BaseNode[]): Promise<{ message: string; isError?: boolean }> {
+  const validName = /^[a-zA-Z0-9_ -]+$/;
+
+  // FIRST PASS: Validate all frame names before processing anything
+  const invalidFrames: string[] = [];
+
+  for (const node of selectedNodes) {
+    const nodeName = (node as any).name || 'Unnamed';
+
+    // Check for invalid characters in frame name
+    if (!validName.test(nodeName)) {
+      invalidFrames.push(nodeName);
+    }
+  }
+
+  // If there are any naming issues, return error without processing anything
+  if (invalidFrames.length > 0) {
+    let message = `${invalidFrames.length} frame${invalidFrames.length !== 1 ? 's' : ''} ${invalidFrames.length !== 1 ? 'have' : 'has'} invalid characters in name:\n`;
+    for (let i = 0; i < invalidFrames.length; i++) {
+      message += '• ' + invalidFrames[i];
+      if (i < invalidFrames.length - 1) {
+        message += '\n';
+      }
+    }
+    return { message, isError: true };
+  }
+
+  // SECOND PASS: All names are valid, process all frames
+  const successes: string[] = [];
+  const failures: { name: string; reason: string }[] = [];
+
+  let currentYPos = 0;
+  const firstNode = selectedNodes[0] as any;
+  let yStartPos = firstNode.y;
+  // Calculate X position based on first frame (all batch sets align to this)
+  const xPosition = firstNode.x + firstNode.width + 40;
+
+  for (const node of selectedNodes) {
+    const nodeName = (node as any).name || 'Unnamed';
+
+    try {
+      // Check if node is valid
+      if (!('clone' in node)) {
+        failures.push({
+          name: nodeName,
+          reason: 'not a valid frame'
+        });
+        continue;
+      }
+
+      // Create component set with calculated Y position for vertical stacking
+      // and fixed X position for left alignment
+      const yPosition = yStartPos + currentYPos;
+      await createComponentSet(node, nodeName, yPosition, xPosition, true);
+
+      successes.push(nodeName);
+
+      // Update Y position for next component set (height 80px + 80px spacing)
+      currentYPos += 80 + 80;
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : 'unknown error';
+      failures.push({
+        name: nodeName,
+        reason: reason
+      });
+    }
+  }
+
+  // Build summary message
+  let message = '';
+  if (successes.length > 0) {
+    message = `Created ${successes.length} component set${successes.length !== 1 ? 's' : ''}`;
+  }
+
+  if (failures.length > 0) {
+    if (message) {
+      message += `. ${failures.length} failed`;
+    } else {
+      message = `Failed to create component sets`;
+    }
+
+    // Add first failure detail if any
+    if (failures.length > 0) {
+      message += `: ${failures[0].name} (${failures[0].reason})`;
+    }
+  }
+
+  return { message };
+}
+
+async function createComponentSet(sourceNode: BaseNode, iconName: string, yPosition?: number, xPosition?: number, isBatch: boolean = false): Promise<void> {
   // Step 1: Create a working frame (flatten, scale, ungroup)
   const workingFrame = sourceNode.clone();
 
@@ -106,8 +215,12 @@ async function createComponentSet(sourceNode: BaseNode, iconName: string): Promi
 
   // Step 2: Create 6 size variants based on icon size
   const components: ComponentNode[] = [];
-  const startX = (sourceNode as any).x + (sourceNode as any).width + 40;
+
+  // For batch mode, use the provided xPosition for left alignment
+  // For single mode, calculate position based on the selected frame
+  const startX = xPosition !== undefined ? xPosition : (sourceNode as any).x + (sourceNode as any).width + 40;
   let xPos = startX;
+  const frameYPos = yPosition !== undefined ? yPosition : (sourceNode as any).y;
 
   for (const [size, strokeWeight] of Object.entries(SIZES_AND_WEIGHTS)) {
     const sizeNum = parseInt(size);
@@ -163,7 +276,7 @@ async function createComponentSet(sourceNode: BaseNode, iconName: string): Promi
 
     // Position the frame
     frame.x = xPos;
-    frame.y = (sourceNode as any).y;
+    frame.y = frameYPos;
     xPos += frame.width + SPACING;
 
     // Create component from the frame
@@ -313,4 +426,4 @@ function applyStrokeWeightRecursive(node: BaseNode, weight: number): void {
 }
 
 // Show the UI
-figma.showUI(__html__, { width: 400, height: 400 });
+figma.showUI(__html__, { width: 400, height: 480 });
